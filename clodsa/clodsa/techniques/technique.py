@@ -26,6 +26,10 @@ class PositionInvariantTechnique(with_metaclass(ABCMeta, Technique)):
     def apply(self, image):
         raise NotImplementedError
 
+    @abstractmethod
+    def apply2(self, image, maskLabels):
+        raise NotImplementedError
+
 class BackgroundReplaceTechnique(with_metaclass(ABCMeta, Technique)):
     def __init__(self, parameters=None):
         Technique.__init__(self, parameters)

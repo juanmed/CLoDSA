@@ -41,7 +41,7 @@ def readAndGenerateInstanceSegmentation(outputPath, transformers, inputPath, ima
         try:
 
             (newimage, newmasklabels) = transformer.transform(image, maskLabels)
-            print("maskLabesl: ".format(maskLabels))
+            print("maskLabels: ".format(maskLabels))
             print("newMaskLabels: ".format(newmasklabels))
             image = newimage
             maskLabels = newmasklabels
