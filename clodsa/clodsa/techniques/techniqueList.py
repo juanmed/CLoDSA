@@ -30,6 +30,7 @@ from .changeToLABAugmentationTechnique import changeToLABAugmentationTechnique
 from .invertAugmentationTechnique import invertAugmentationTechnique
 from .cropSizeAugmentationTechnique import cropSizeAugmentationTechnique
 from .backgroundReplacementAugmentationTechnique import backgroundReplacementAugmentationTechnique
+from .randomRotateAugmentationTechnique import randomRotateAugmentationTechnique
 
 Techniques = {
     "average_blurring" : averageBlurringAugmentationTechnique,
@@ -57,6 +58,7 @@ Techniques = {
     "raise_value":raiseValueAugmentationTechnique,
     "resize": resizeAugmentationTechnique,
     "rotate": rotateAugmentationTechnique,
+    "random_rotate": randomRotateAugmentationTechnique,
     "salt_and_pepper":saltAndPepperNoiseAugmentationTechnique,
     "sharpen":sharpenAugmentationTechnique,
     "shift_channel":shiftChannelAugmentationTechnique,

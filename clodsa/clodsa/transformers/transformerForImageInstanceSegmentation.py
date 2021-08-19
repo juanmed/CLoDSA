@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from .transformer import Transformer
-from ..techniques.technique import PositionVariantTechnique, BackgroundReplaceTechnique
-
+from ..techniques.technique import PositionVariantTechnique, BackgroundReplaceTechnique, RandomRotateTechnique
+import random
 
 
 
@@ -11,7 +11,13 @@ class TransformerForImageInstanceSegmentation(Transformer):
         Transformer.__init__(self,technique,dictLabels)
 
     def transform(self, image,maskLabels):
-        if (isinstance(self.technique, BackgroundReplaceTechnique)):
+        if (isinstance(self.technique, RandomRotateTechnique)):
+            angle = random.randint(0,360)
+            return [self.technique.apply2(image, angle),
+                    [(self.technique.apply2(mask, angle), self.transformLabel(label))
+                     for mask,label in maskLabels ]]
+
+        elif (isinstance(self.technique, BackgroundReplaceTechnique)):
             return [self.technique.apply2(image, maskLabels),
                     [(mask, self.transformLabel(label))
                      for mask, label in maskLabels]]

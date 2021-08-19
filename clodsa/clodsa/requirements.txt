@@ -1,13 +1,12 @@
 mahotas==1.4.3
-Keras==2.2.2
-numpy==1.11.0
+#Keras==2.2.2
+numpy>=1.11.0
 imutils==0.5.1
 commentjson==0.7.1
 scipy==0.18.1
 future==0.16.0
-h5py==2.6.0
 progressbar2==3.39.2
 scikit_learn==0.20.2
-tensorflow>=1.12.1
+tensorflow==2.4
 opencv-python==3.4.3.18
 joblib

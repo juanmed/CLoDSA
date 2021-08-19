@@ -45,8 +45,9 @@ def readAndGenerateInstanceSegmentation(outputPath, transformers, inputPath, ima
             print("newMaskLabels: ".format(newmasklabels))
             image = newimage
             maskLabels = newmasklabels
-        except:
-            print("Error in image: " + imagePath)
+        except Exception as e:
+            print("Error in image: " + imagePath+ " \n")
+            print(e)
 
     (hI,wI) =newimage.shape[:2]
     cv2.imwrite(outputPath + str(j) + "_" + name, newimage)
@@ -99,6 +100,11 @@ class COCOSequentialInstanceSegmentationAugmentor(IAugmentor):
                                              (self.outputPath, self.transformers, self.imagesPath, self.dictImages[x],
                                               self.dictAnnotations[x],self.ignoreClasses)
                                              for x in self.dictImages.keys())
+
+        #newannotations = []
+        #for x in self.dictImages.keys():
+        #    out = readAndGenerateInstanceSegmentation(self.outputPath, self.transformers, self.imagesPath, self.dictImages[x],self.dictAnnotations[x],self.ignoreClasses)
+        #    newannotations.append(out)
 
         data = {}
         data['info'] = self.info
