@@ -32,6 +32,7 @@ from .cropSizeAugmentationTechnique import cropSizeAugmentationTechnique
 from .backgroundReplacementAugmentationTechnique import backgroundReplacementAugmentationTechnique
 from .randomRotateAugmentationTechnique import randomRotateAugmentationTechnique
 from .randomObjectNonOcclusionTechnique import randomObjectNonOcclusionTechnique
+from .randomObjectOcclusionTechnique import randomObjectOclussionTechnique
 
 Techniques = {
     "average_blurring" : averageBlurringAugmentationTechnique,
@@ -65,6 +66,7 @@ Techniques = {
     "shift_channel":shiftChannelAugmentationTechnique,
     "shearing": shearingAugmentationTechnique,
     "translation": translationAugmentationTechnique,
-    "background_replacement": backgroundReplacementAugmentationTechnique
-    "random_object_non_occlusion": randomObjectNonOcclusionTechnique
+    "background_replacement": backgroundReplacementAugmentationTechnique,
+    "random_object_non_occlusion": randomObjectNonOcclusionTechnique,
+    "random_object_occlusion": randomObjectOclussionTechnique
 }

@@ -9,10 +9,12 @@ from .utils.readCOCOJSON import readCOCOJSON
 
 from ..transformers.transformerFactory import transformerGenerator
 from ..techniques.techniqueFactory import createTechnique
+from ..techniques.technique import RandomObjectOcclusionTechnique
 import json
 import cv2
 from joblib import Parallel, delayed
 import imutils
+import copy
 
 
 def readAndGenerateInstanceSegmentation(outputPath, transformers, inputPath, imageInfo, annotationsInfo,ignoreClasses):
@@ -20,52 +22,82 @@ def readAndGenerateInstanceSegmentation(outputPath, transformers, inputPath, ima
     imagePath = inputPath + "/" + name
     (w, h) = imageInfo[1]
     image = cv2.imread(imagePath)
-    maskLabels = []
-    labels = set()
-    for (c, annotation) in annotationsInfo:
-        mask = np.zeros((h, w), dtype="uint8")
-        annotation = [[annotation[2 * i], annotation[2 * i + 1]] for i in range(0, int(len(annotation) / 2))]
-        pts = np.array([[int(x[0]), int(x[1])] for x in annotation], np.int32)
-        pts = pts.reshape((-1, 1, 2))
-        cv2.fillPoly(mask, [pts], True, 255)
-        maskLabels.append((mask, c))
-        labels.add(c)
 
-    if not(labels.isdisjoint(ignoreClasses)):
-        newtransformer = transformerGenerator("instance_segmentation")
-        none = createTechnique("none",{})
-        transformers = [newtransformer(none)]
+    ##depth_imagePath = imagePath.replace("color","depth")
+    ##depth_image = cv2.imread(depth_imagePath, cv2.IMREAD_UNCHANGED)
+    ##print(np.mean(depth_image))
 
-    allNewImagesResult = []
-    for (j, transformer) in enumerate(transformers):
-        try:
+    if image is not None:
+        maskLabels = []
+        labels = set()
+        for (c, annotation) in annotationsInfo:
+            mask = np.zeros((h, w), dtype="uint8")
+            annotation = [[annotation[2 * i], annotation[2 * i + 1]] for i in range(0, int(len(annotation) / 2))]
+            pts = np.array([[int(x[0]), int(x[1])] for x in annotation], np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.fillPoly(mask, [pts], True, 255)
+            maskLabels.append((mask, c))
+            labels.add(c)
 
+        if not(labels.isdisjoint(ignoreClasses)):
+            newtransformer = transformerGenerator("instance_segmentation")
+            none = createTechnique("none",{})
+            transformers = [newtransformer(none)]
+
+        #dummy_maskLabels = copy.deepcopy(maskLabels)
+
+        allNewImagesResult = []
+        for (j, transformer) in enumerate(transformers):
+            #try:
+            if (isinstance(transformer.technique, RandomObjectOcclusionTechnique)):
+                transformer.technique.input_image_name = name                
             (newimage, newmasklabels) = transformer.transform(image, maskLabels)
-            print("maskLabels: ".format(maskLabels))
-            print("newMaskLabels: ".format(newmasklabels))
+            #print("maskLabels: ".format(maskLabels))
+            #print("newMaskLabels: ".format(newmasklabels))
             image = newimage
             maskLabels = newmasklabels
-        except Exception as e:
-            print("Error in image: " + imagePath+ " \n")
-            print(e)
+            #except Exception as e:
+            #    print("Error in image: " + imagePath+ " \n")
+            #    print(e)
 
-    (hI,wI) =newimage.shape[:2]
-    cv2.imwrite(outputPath + str(j) + "_" + name, newimage)
-    newSegmentations = []
-    for (mask, label) in newmasklabels:
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        cnts = cnts[0] if imutils.is_cv2() or imutils.is_cv4() else cnts[1]
-        if len(cnts)>0:
-            segmentation = [[x[0][0], x[0][1]] for x in cnts[0]]
-            # Closing the polygon
-            segmentation.append(segmentation[0])
+        """ Modification for depth images
+        # apply transform to depth image... ignore labels
+        for (j, transformer) in enumerate(transformers):
+            try:
 
-            newSegmentations.append((label, cv2.boundingRect(cnts[0]), segmentation, cv2.contourArea(cnts[0])))
+                (depth_newimage, _) = transformer.transform(depth_image, dummy_maskLabels)
+                #print("maskLabels: ".format(maskLabels))
+                #print("newMaskLabels: ".format(newmasklabels))
+                #image = newimage
+                #maskLabels = newmasklabels
+            except Exception as e:
+                print("Error in image: " + imagePath+ " \n")
+                print(e)
+        """
+        (hI,wI) =newimage.shape[:2]
+        print("Writing: ", outputPath + str(j) + "_" + name, newimage.shape, np.mean(newimage))
+        cv2.imwrite(outputPath + str(j) + "_" + name, newimage)
+        #cv2.imwrite(outputPath + str(j) + "_" + name, mask)
+        #cv2.imwrite(outputPath + str(j) + "_d_" + name, depth_newimage)
+        newSegmentations = []
+        for (mask, label) in newmasklabels:
+            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            cnts = cnts[0] if imutils.is_cv2() or imutils.is_cv4() else cnts[1]
+            if len(cnts)>0:
+                segmentation = [[x[0][0], x[0][1]] for x in cnts[0]]
+                # Closing the polygon
+                segmentation.append(segmentation[0])
 
-    allNewImagesResult.append((str(j) + "_" + name, (wI, hI), newSegmentations))
+                newSegmentations.append((label, cv2.boundingRect(cnts[0]), segmentation, cv2.contourArea(cnts[0])))
 
-    return allNewImagesResult
+        allNewImagesResult.append((str(j) + "_" + name, (wI, hI), newSegmentations))
+
+        return allNewImagesResult
+    else:
+        allNewImagesResult = []
+        allNewImagesResult.append((str(0) + "_" + name, (0,0),[]))
+        return allNewImagesResult
 
 
 # This class serves to generate images for an instance segmentation
@@ -106,6 +138,7 @@ class COCOSequentialInstanceSegmentationAugmentor(IAugmentor):
         #    out = readAndGenerateInstanceSegmentation(self.outputPath, self.transformers, self.imagesPath, self.dictImages[x],self.dictAnnotations[x],self.ignoreClasses)
         #    newannotations.append(out)
 
+        
         data = {}
         data['info'] = self.info
         data['licenses'] = self.licenses
@@ -150,4 +183,4 @@ class COCOSequentialInstanceSegmentationAugmentor(IAugmentor):
         os.makedirs(self.outputPath,exist_ok=True)
         with open(self.outputPath + "annotation.json", 'w') as outfile:
             json.dump(data, outfile)
-
+        

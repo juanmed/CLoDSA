@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .transformer import Transformer
-from ..techniques.technique import PositionVariantTechnique, BackgroundReplaceTechnique, RandomRotateTechnique
+from ..techniques.technique import PositionVariantTechnique, BackgroundReplaceTechnique, RandomRotateTechnique, RandomObjectOcclusionTechnique
 from ..techniques.randomObjectNonOcclusionTechnique import randomObjectNonOcclusionTechnique
 import random
 
@@ -32,6 +32,8 @@ class TransformerForImageInstanceSegmentation(Transformer):
             return [self.technique.apply(image),
                     [(self.technique.apply(mask), self.transformLabel(label))
                      for mask,label in maskLabels ]]
+        elif (isinstance(self.technique, RandomObjectOcclusionTechnique)):
+            return self.technique.apply2(image,maskLabels)
 
         else:
             return [self.technique.apply(image),

@@ -53,3 +53,15 @@ class RandomRotateTechnique(with_metaclass(ABCMeta, Technique)):
     @abstractmethod
     def apply2(self, image, angle):
         raise NotImplementedError
+
+class RandomObjectOcclusionTechnique(with_metaclass(ABCMeta, Technique)):
+    def __init__(self, parameters=None):
+        Technique.__init__(self, parameters)
+
+    @abstractmethod
+    def apply(self, image):
+        raise NotImplementedError
+
+    @abstractmethod
+    def apply2(self, image, maskLabels):
+        raise NotImplementedError

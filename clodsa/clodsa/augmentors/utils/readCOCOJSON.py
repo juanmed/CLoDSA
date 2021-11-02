@@ -7,8 +7,8 @@ def readCOCOJSON(jsonPath):
     with open(jsonPath) as f:
         data = json.load(f)
 
-    info = data['info']
-    licenses = data['licenses']
+    info = {} # data['info']
+    licenses = {} #data['licenses']
     categories = data['categories']
     images = data['images']
     annotations = data['annotations']
