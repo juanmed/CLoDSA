@@ -29,6 +29,9 @@ class saltAndPepperNoiseAugmentationTechnique(PositionInvariantTechnique):
         image_noise = cv2.add(image, im)
         return image_noise
 
+    def apply2(self, image, maskLabels):
+        return (image, maskLabels)
+
 
 # image = cv2.imread("LPR1.jpg")
 # print (image.shape)

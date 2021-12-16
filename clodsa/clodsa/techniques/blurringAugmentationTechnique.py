@@ -20,6 +20,9 @@ class blurringAugmentationTechnique(PositionInvariantTechnique):
         blurred = cv2.blur(image, (self.ksize,self.ksize))
         return blurred
 
+    def apply2(self, image, maskLabels):
+        return (image, maskLabels)
+
 
 # technique = blurringAugmentationTechnique(5)
 # image = cv2.imread("LPR1.jpg")

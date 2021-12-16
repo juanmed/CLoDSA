@@ -26,6 +26,9 @@ class dropoutAugmentationTechnique(PositionInvariantTechnique):
                 imageC[dropoutelem[0], dropoutelem[1]] = 0
         return imageC
 
+    def apply2(self, image, maskLabels):
+        return (image, maskLabels)
+
 # technique = dropoutAugmentationTechnique(0.5)
 # image = cv2.imread("LPR1.jpg")
 # cv2.imshow("t",technique.applyForClassification(image))

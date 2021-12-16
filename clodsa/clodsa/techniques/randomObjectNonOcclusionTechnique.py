@@ -42,9 +42,12 @@ class randomObjectNonOcclusionTechnique(PositionInvariantTechnique):
                 # overlay image
                 contours , hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
                 c, s, a = cv2.minAreaRect(contours[0]) # ((center_x,center_y),(width,height),angle)
-                rand_img = cv2.imread(os.path.join(self.parameters["random_images_dir"], random.sample(rand_img_files,1)[0]), cv2.IMREAD_COLOR)
+                fn = os.path.join(self.parameters["random_images_dir"], random.sample(rand_img_files,1)[0])
+                rand_img = cv2.imread(fn, cv2.IMREAD_COLOR)
                 r_factor = self.parameters["resize_factor"]
-                rand_img = cv2.resize(rand_img, (int(s[0]*r_factor),int(s[1]*r_factor)))
+                #print((int(s[0]),int(s[1])), fn)
+                if (int(s[0]) > 10) and (int(s[1])>10):
+                    rand_img = cv2.resize(rand_img, (int(s[0]*r_factor),int(s[1]*r_factor)))
                 rand_img = rotate_image(rand_img, a+1)
                 rand_img_mask = np.zeros_like(image)
                 rand_w = random.randint(-s[0]//2,s[0]//2) # random location inside minAreaRect

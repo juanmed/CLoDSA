@@ -25,3 +25,6 @@ class gammaCorrectionAugmentationTechnique(PositionInvariantTechnique):
 
         # apply gamma correction using the lookup table
         return cv2.LUT(image, table)
+
+    def apply2(self, image, maskLabels):
+        return (image, maskLabels)

@@ -13,6 +13,7 @@ class randomObjectOclussionTechnique(RandomObjectOcclusionTechnique):
         RandomObjectOcclusionTechnique.__init__(self, parameters)
         self.parameters = parameters
         self.input_image_name = ""
+        #self.sw = SVGWriter()
 
     def apply(self, image):
         return image
@@ -105,6 +106,25 @@ class randomObjectOclussionTechnique(RandomObjectOcclusionTechnique):
     def down_image(self):
         n = int(self.input_image_name.split(".")[0]) < 72
         return n
+
+    def irregular_containerize(self, objects, bins, params):
+        item_list = []
+        for k, obj in enumerate(objects):
+            mask = obj[3]
+            cnt, h = cv2.findContours(mask.astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.imwrite("/tmp/k.png", mask)
+            #print(len(cnt),cnt[0].shape)
+            ps = []
+            for p in cnt[0].reshape(-1,2):
+                ps.append(Point(p[0]*1000,p[1]*1000))
+            item_list.append(Item(ps))
+        package = nest(item_list, Box(bins[0]*1000, bins[1]*1000))
+        print(package)
+        self.sw.write_packgroup(package)
+        self.sw.save()
+
+
+
 
     def apply2(self, image, maskLabels):
 
@@ -235,7 +255,7 @@ class randomObjectOclussionTechnique(RandomObjectOcclusionTechnique):
                 if (random.random() > 0.5):
                     rgb_img_patch = cv2.rotate(rgb_img_patch, cv2.ROTATE_90_CLOCKWISE)
                     mask_img_patch = cv2.rotate(mask_img_patch, cv2.ROTATE_90_CLOCKWISE)
-                    factor = random.random() * 0.1 + 0.8
+                    factor = random.random() * 0.1 + 0.7
                     rgb_img_patch = cv2.resize(rgb_img_patch, None, fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
                     mask_img_patch = cv2.resize(mask_img_patch, None, fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
 
@@ -309,8 +329,61 @@ class randomObjectOclussionTechnique(RandomObjectOcclusionTechnique):
                     newMaskLabels.append((newmask, category))
                 remaining_h -= mask_p_h
 
-        return [image, newMaskLabels]
+        """
+        else:
+            total_area = (h_max - h_min) * (w_max - w_min)
+            objects = []
+            occupied_area = 0
+            factor = 1.0
+            while occupied_area < int(factor*total_area):
 
+                rgb_img_path = random.sample(rgb_img_files,1)[0]
+                rgb_img_patch = cv2.imread(os.path.join(self.parameters["random_images_dir"], rgb_img_path), cv2.IMREAD_COLOR)
+                depth_img_patch = cv2.imread(os.path.join(self.parameters["random_images_dir"].replace("color","color"), rgb_img_path), cv2.IMREAD_UNCHANGED)
+                mask_img_patch = cv2.imread(os.path.join(self.parameters["random_images_dir"].replace("color","mask"), rgb_img_path), cv2.IMREAD_GRAYSCALE)
+
+                occupied_area += rgb_img_patch.shape[0]*rgb_img_patch.shape[1]
+                if occupied_area < int(factor*total_area):
+                    objects.append((rgb_img_path, rgb_img_patch, 
+                        depth_img_patch, mask_img_patch))
+                else:
+                    break
+            print("Area Ratio: ",occupied_area,"/",total_area,occupied_area/total_area)
+
+            bins = [w_max - w_min, h_max - h_min]
+            rects =  self.irregular_containerize(objects, bins, True)
+            #print("Total Objects Filled: ",len(rects))
+            
+            for rect in []:
+                bid, bx, by, w, h, rid = rect#.x, rect.y,rect.width,rect.height,rect.rid
+                path, rgb_p, depth_p, mask_p = objects[rid]
+
+                # if box was rotated during packing, rotate source patch and mask.. should
+                # include depth at some point
+                if (h,w) != (rgb_p.shape[0],rgb_p.shape[1]):
+                    rgb_p = cv2.rotate(rgb_p, cv2.ROTATE_90_CLOCKWISE)
+                    mask_p = cv2.rotate(mask_p, cv2.ROTATE_90_CLOCKWISE)
+                    assert (h,w) == (rgb_p.shape[0],rgb_p.shape[1])
+
+                #  create new mask
+                newmask = np.zeros_like(joint_mask, np.uint8)
+                mask_p_h, mask_p_w = mask_p.shape
+                newmask[h_max - by - mask_p_h:h_max - by, w_min + bx:w_min + bx + mask_p_w] = mask_p
+
+                # extract category
+                #print("Path: ",path)
+                category = int(path[0])
+
+                # modify origina image
+                newimgpatch = np.zeros_like(image)
+
+                newimgpatch[h_max - by - mask_p_h:h_max - by, w_min + bx:w_min + bx + mask_p_w,:] = rgb_p
+                image = np.where(np.dstack((newmask,newmask,newmask)), newimgpatch, image)
+
+                newMaskLabels.append((newmask, category))
+        """
+        return [image, newMaskLabels]
+        
 
 
 
