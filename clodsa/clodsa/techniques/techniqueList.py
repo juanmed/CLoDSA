@@ -33,6 +33,7 @@ from .backgroundReplacementAugmentationTechnique import backgroundReplacementAug
 from .randomRotateAugmentationTechnique import randomRotateAugmentationTechnique
 from .randomObjectNonOcclusionTechnique import randomObjectNonOcclusionTechnique
 from .randomObjectOcclusionTechnique import randomObjectOclussionTechnique
+from .patchifyAugmentationTechnique import patchifyAugmentationTechnique
 
 Techniques = {
     "average_blurring" : averageBlurringAugmentationTechnique,
@@ -68,5 +69,6 @@ Techniques = {
     "translation": translationAugmentationTechnique,
     "background_replacement": backgroundReplacementAugmentationTechnique,
     "random_object_non_occlusion": randomObjectNonOcclusionTechnique,
-    "random_object_occlusion": randomObjectOclussionTechnique
+    "random_object_occlusion": randomObjectOclussionTechnique,
+    "patchify" : patchifyAugmentationTechnique
 }
