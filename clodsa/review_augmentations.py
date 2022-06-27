@@ -10,8 +10,8 @@ import cv2
 
 image_directory = 'output/'
 annotation_file = 'output/annotation.json'
-image_directory = '/home/rise/Downloads/unloading_datasets/results/merged/images/'
-annotation_file = '/home/rise/Downloads/unloading_datasets/results/merged/annotations/new.json'
+image_directory = '/home/rise/Downloads/unloading_datasets/zerowaste/zerowaste-f-final/splits_final_deblurred/train/data/'
+annotation_file = '/home/rise/Downloads/unloading_datasets/zerowaste/zerowaste-f-final/splits_final_deblurred/train/labels.json'
 #image_directory = '/home/rise/'
 #annotation_file = '/home/rise/'
 #image_directory = 'images/minjae/'
@@ -47,9 +47,9 @@ bottle = 0
 other = 0
 total_anns = 0
 num_anns = []
-for image_id in image_ids[:]:
+for image_id in image_ids[:5]:
     image_data = example_coco.loadImgs(image_id)[0]
-    #print("Currently viewing: {}".format(image_directory + image_data['file_name']))
+    print("Currently viewing: {}".format(image_directory + image_data['file_name']))
     try:
         image = cv2.imread(image_directory + image_data['file_name'], cv2.IMREAD_UNCHANGED)
     except Exception as e:
