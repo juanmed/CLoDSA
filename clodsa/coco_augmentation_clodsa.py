@@ -9,10 +9,10 @@ import cv2
 
 PROBLEM = "instance_segmentation"
 ANNOTATION_MODE = "coco"
-INPUT_PATH = "./images/"
+INPUT_PATH = "/home/rise/Downloads/unloading_datasets/results/all_rgb_datasets_merged/images/"
 GENERATION_MODE = "sequential"
 OUTPUT_MODE = "coco"
-OUTPUT_PATH= "output/"
+OUTPUT_PATH= "./output/"
 augmentor = createAugmentor(PROBLEM,ANNOTATION_MODE,OUTPUT_MODE,GENERATION_MODE,INPUT_PATH,{"outputPath":OUTPUT_PATH})
 transformer = transformerGenerator(PROBLEM)
 
@@ -21,11 +21,11 @@ transformer = transformerGenerator(PROBLEM)
 
 
 
-t = createTechnique("random_object_non_occlusion", 
-					{"random_images_dir":"/home/fer/repos/CLoDSA/random_instances/",
-					"rate":0.5,
-					"resize_factor":0.4})
-augmentor.addTransformer(transformer(t))
+#t = createTechnique("random_object_non_occlusion", 
+#					{"random_images_dir":"/home/fer/repos/CLoDSA/random_instances/",
+#					"rate":0.5,
+#					"resize_factor":0.4})
+#augmentor.addTransformer(transformer(t))
 
 #t = createTechnique("resize", {"x":20,"y":20})
 #augmentor.addTransformer(transformer(t))
@@ -36,12 +36,14 @@ augmentor.addTransformer(transformer(t))
 
 #flip0 = createTechnique("random_object_occlusion",
 #						{"random_images_dir":"/home/fer/repos/CLoDSA/random_instances/color"})
-#flip1 = createTechnique("flip",{"flip":1})
-#flipm1 = createTechnique("flip",{"flip":-1})
+flip1 = createTechnique("flip",{"flip":1})
+flipm1 = createTechnique("flip",{"flip":0})
 #augmentor.addTransformer(transformer(flip0))
 #augmentor.addTransformer(transformer(flip1))
 #augmentor.addTransformer(transformer(flipm1))
 
+trans = createTechnique("translation",{"x":0,"y":400})
+augmentor.addTransformer(transformer(trans))
 
 #blur = createTechnique("blurring", {"ksize" : 5})
 #augmentor.addTransformer(transformer(blur))
@@ -59,8 +61,8 @@ augmentor.addTransformer(transformer(t))
 #none = createTechnique("none",{})
 #augmentor.addTransformer(transformer(none))
 
-rotate = createTechnique("random_rotate", {"range":[-90,90]})
-augmentor.addTransformer(transformer(rotate))
+#rotate = createTechnique("random_rotate", {"range":[-90,90]})
+#augmentor.addTransformer(transformer(rotate))
 
 #sp = createTechnique("salt_and_pepper", {"low" : 0,"up":50})
 #augmentor.addTransformer(transformer(sp))

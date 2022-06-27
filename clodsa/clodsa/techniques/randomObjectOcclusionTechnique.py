@@ -5,7 +5,7 @@ import numpy as np
 import os
 import random
 import copy
-from nest2D import Point, Box, Item, nest, SVGWriter
+#from nest2D import Point, Box, Item, nest, SVGWriter
 
 class randomObjectOclussionTechnique(RandomObjectOcclusionTechnique):
 

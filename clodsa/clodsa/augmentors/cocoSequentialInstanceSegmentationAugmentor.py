@@ -181,6 +181,6 @@ class COCOSequentialInstanceSegmentationAugmentor(IAugmentor):
             imageId += 1
 
         os.makedirs(self.outputPath,exist_ok=True)
-        with open(self.outputPath + "annotation.json", 'w') as outfile:
+        with open(self.outputPath + "annotations.json", 'w') as outfile:
             json.dump(data, outfile)
         

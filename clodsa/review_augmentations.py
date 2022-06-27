@@ -4,15 +4,16 @@ import skimage.io as io
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import pylab
 import cv2
 
 image_directory = 'output/'
 annotation_file = 'output/annotation.json'
-#image_directory = '/home/fer/repos/CLoDSA/clodsa/results/merged/images/'
-#annotation_file = '/home/fer/repos/CLoDSA/clodsa/results/merged/images/merged.json'
-image_directory = '/home/fer/Downloads/5classes_stacked_random_sack_oscd/5classes_stacked_random_sack_oscd/train/'
-annotation_file = '/home/fer/Downloads/5classes_stacked_random_sack_oscd/5classes_stacked_random_sack_oscd/annotations/new.json'
+image_directory = '/home/rise/Downloads/unloading_datasets/results/merged/images/'
+annotation_file = '/home/rise/Downloads/unloading_datasets/results/merged/annotations/new.json'
+#image_directory = '/home/rise/'
+#annotation_file = '/home/rise/'
 #image_directory = 'images/minjae/'
 #annotation_file = 'images/minjae/annotations.json'
 example_coco = COCO(annotation_file)
@@ -29,15 +30,24 @@ print(category_names)
 category_ids = example_coco.getCatIds(catNms=['circle'])
 print("Cat IDS: {}".format(category_ids))
 image_ids = example_coco.getImgIds(catIds=category_ids)
+print("Total images: ",len(image_ids))
 
 cat_map = {1:"icebox", 2:"box", 3:"pouch", 4:"sack", 5:"bottle", 6: "cube"}
+
+for k, cat in enumerate(category_names):
+    cat_map[k+1] = cat
+
+print(cat_map)   
 
 ice = 0
 box = 0 
 pouch = 0 
 sack = 0 
 bottle = 0 
-for image_id in image_ids[:0]:
+other = 0
+total_anns = 0
+num_anns = []
+for image_id in image_ids[:]:
     image_data = example_coco.loadImgs(image_id)[0]
     #print("Currently viewing: {}".format(image_directory + image_data['file_name']))
     try:
@@ -52,10 +62,18 @@ for image_id in image_ids[:0]:
         pass
     else:
         print( " ##### ESTA IMAGEN NO ESTA ######")
-        break
+        continue
+
     annotation_ids = example_coco.getAnnIds(imgIds=image_data['id'], catIds=category_ids, iscrowd=None)
+    total_anns += len(annotation_ids)
+    #assert len(annotation_ids) > 0, "{} has no annotations".format(image_data['file_name'])
+    if len(annotation_ids) <= 0:
+        print("{} has no annotations".format(image_data['file_name']))
+    num_anns.append(len(annotation_ids))
     #annotations = example_coco.loadAnns(annotation_ids)
     target = [x for x in example_coco.loadAnns(annotation_ids) if x['image_id'] == image_id]
+    
+    
     masks = [example_coco.annToMask(obj).reshape(-1) for obj in target]
     
     try:
@@ -65,7 +83,7 @@ for image_id in image_ids[:0]:
         print("\nMask stack Problem:  image_id {}, {}".format(image_id, image_directory + image_data['file_name']))
         print(str(e))
         continue
-
+    
 
     for ann in target:
         ann_id = ann["category_id"]
@@ -79,15 +97,30 @@ for image_id in image_ids[:0]:
             sack += 1
         elif ann_id == 5:
             bottle +=1
+        elif ann_id == 6:
+            other +=1
         else:
             print("*** ID EXTRANO *** ", ann_id)
 
-print("Boxes:",  box)
-print("Icebox: ", ice)
-print("Pouch: ", pouch)
-print("Sack: ", sack)
-print("Bottle: ", bottle)
+print(cat_map[1],":",  box)
+print(cat_map[2],": ", ice)
+print(cat_map[3],": ", pouch)
+print(cat_map[4],": ", sack)
+print(cat_map[5],": ", bottle)
+print("Total annotations", total_anns)
+print("Average annotation per image: ",total_anns/len(image_ids))
 
+fig =plt.figure(figsize=(5,3))
+ax1 = fig.add_subplot(1,1,1)
+ax1.hist(num_anns,rwidth = 0.2, label = "", log=True)
+#ax1.hist(num_anns, rwidth = 0.3, cumulative=True,label = "cumulative", color = "green")
+ax1.set_title("Annotation frequency for validation split")
+ax1.set_xlabel("Number of annotations")
+ax1.set_ylabel("Image count")
+ax1.legend(loc = "best")
+#plt.hist(num_anns, rwidth = 0.3)
+plt.tight_layout()
+plt.show()
 
 a = True
 same = False
@@ -96,15 +129,17 @@ while a:
     if same == False:
         idx = np.random.randint(0, len(image_ids))
         idx += 1
-    idx = 10219
-    image_data = example_coco.loadImgs(idx)[0]
-    #image_data = example_coco.loadImgs(image_ids[idx])[0]
+    #idx = 10219
+    #image_data = example_coco.loadImgs(idx)[0]
+    image_data = example_coco.loadImgs(image_ids[idx])[0]
 
     same= False
     print("Currently viewing: {}".format(image_directory + image_data['file_name']))
+    h = image_data['height']
+    w = image_data['width']
     image = io.imread(image_directory + image_data['file_name'])
     plt.imshow(image); plt.axis('off')
-    pylab.rcParams['figure.figsize'] = (20.0, 20.0)
+    #pylab.rcParams['figure.figsize'] = (20.0, 20.0)
     annotation_ids = example_coco.getAnnIds(imgIds=image_data['id'], catIds=category_ids, iscrowd=None)
     annotations = example_coco.loadAnns(annotation_ids)
     example_coco.showAnns(annotations, draw_bbox=False)
@@ -115,7 +150,13 @@ while a:
         ann_id = ann["category_id"]
         name = cat_map[ann_id]
         bbox = ann["bbox"]
-        ax.text(bbox[0]+bbox[2]//2,bbox[1]+bbox[3]//2, name,fontsize=12)
+        if bbox[0] > w:
+            print("bbox fuera de image : bbox x {}, width {}".format(bbox[0],w))
+        if bbox[1] > h:
+            print("bbox fuera de image : bbox y {}, height {}".format(bbox[1],h))
+        ax.text(bbox[0]+bbox[2]//2, bbox[1]+bbox[3]//2, name,fontsize=12)
+        ax.add_patch(Rectangle((bbox[0], bbox[1]),bbox[2], bbox[3],color="yellow", fill=False))
+        ax.add_patch(Rectangle((0, 0),5, 5,color="red", fill=True))
 
 
 
