@@ -19,7 +19,11 @@ transformer = transformerGenerator(PROBLEM)
 
 #for angle in [90,180]:
 
+def sample():
+	return (50,50,256,256)
 
+
+t = createTechnique("patchify",{"patchify": sample})
 
 #t = createTechnique("random_object_non_occlusion", 
 #					{"random_images_dir":"/home/fer/repos/CLoDSA/random_instances/",
